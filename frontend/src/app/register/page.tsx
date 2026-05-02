@@ -2,10 +2,15 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { BrutalistButton } from "@/components/BrutalistButton";
 import { BrutalistInput } from "@/components/BrutalistInput";
+import { authApi } from "@/lib/api";
 
 export default function RegisterPage() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -18,10 +23,25 @@ export default function RegisterPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Register attempt:", formData);
-    // Registration logic will go here
+    setLoading(true);
+    setError("");
+
+    try {
+      await authApi.register({
+        email: formData.email,
+        password: formData.password,
+        full_name: formData.fullName,
+        level: formData.level,
+        attempt_date: formData.attemptDate,
+      });
+      router.push("/login?registered=true");
+    } catch (err: any) {
+      setError(err.message || "REGISTRATION FAILED.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -29,6 +49,12 @@ export default function RegisterPage() {
       <div className="neo-card w-full max-w-2xl bg-secondary text-white space-y-8">
         <h1 className="text-5xl font-heading text-center underline">REGISTER</h1>
         
+        {error && (
+          <div className="bg-primary text-black p-4 border-brutalist font-heading text-xl">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6 text-black">
           <div className="md:col-span-2">
             <BrutalistInput 
@@ -83,8 +109,13 @@ export default function RegisterPage() {
           />
           
           <div className="md:col-span-2">
-            <BrutalistButton type="submit" variant="primary" className="w-full py-4 text-3xl mt-4">
-              LAUNCH ACCOUNT
+            <BrutalistButton 
+              type="submit" 
+              variant="primary" 
+              className="w-full py-4 text-3xl mt-4"
+              disabled={loading}
+            >
+              {loading ? "LAUNCHING..." : "LAUNCH ACCOUNT"}
             </BrutalistButton>
           </div>
         </form>
