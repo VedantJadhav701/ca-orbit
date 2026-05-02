@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #FFD60A;
+  --color-secondary: #FF3B30;
+  --color-dark: #0B0B0F;
+  --color-light: #FFFFFF;
+  
+  --font-heading: var(--font-bangers);
+  --font-body: var(--font-comic-neue);
+  
+  --shadow-brutalist: 12px 12px 0px #000;
+  --shadow-brutalist-hover: 4px 4px 0px #000;
+  
+  --border-brutalist: 3px solid #000;
+  --border-brutalist-lg: 4px solid #000;
+
+  --animate-press: press 0.1s ease-in-out;
+}
+
+@keyframes press {
+  0% { transform: translate(0, 0); }
+  50% { transform: translate(2px, 2px); }
+  100% { transform: translate(0, 0); }
+}
+
+:root {
+  --background: #0B0B0F;
+  --foreground: #FFFFFF;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-comic-neue), system-ui, sans-serif;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-bangers), system-ui, sans-serif;
+}
+
+/* Custom Utilities */
+@utility shadow-brutalist {
+  box-shadow: 12px 12px 0px #000;
+}
+
+@utility shadow-brutalist-lg {
+  box-shadow: 16px 16px 0px #000;
+}
+
+@utility border-brutalist {
+  border: 3px solid #000;
+}
+
+@utility border-brutalist-lg {
+  border: 4px solid #000;
+}
+
+@utility neo-btn {
+  @apply bg-primary text-black border-brutalist shadow-brutalist transition-all duration-150 active:translate-x-[2px] active:translate-y-[2px] active:shadow-[4px_4px_0px_#000] hover:-translate-x-[2px] hover:-translate-y-[2px];
+}
+
+@utility neo-card {
+  @apply bg-white text-black border-brutalist shadow-brutalist p-6;
+}
