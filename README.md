@@ -75,3 +75,10 @@ npm run dev
 This project is entirely open-source and free to use. We believe that technology should empower students, not exploit them. Whether you are a developer looking to contribute, or a CA student looking to optimize your study routine—**Welcome to the Orbit.**
 
 Feel free to fork this repository, open issues, and submit pull requests. Let's build the ultimate study ecosystem for CA students everywhere.
+
+---
+
+## 📜 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. 
+**Copyright © 2026 Vedant Jadhav. All Rights Reserved.**
