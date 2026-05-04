@@ -1,49 +1,77 @@
-# 🚀 CA ORBIT - DEPLOYMENT GUIDE
+# 🚀 CA ORBIT
 
-This project is structured for rapid deployment to **Vercel** (Frontend) and **Render/Railway** (Backend).
+**Built for the Brave. Built for CA Students.**
 
-## 🛠 Prerequisites
-- GitHub Repository
-- [Vercel Account](https://vercel.com)
-- [Render Account](https://render.com) (or Railway)
-- PostgreSQL Database (e.g., [Supabase](https://supabase.com) or Render Postgres)
+CA Orbit is a **free, open-source** AI-powered Mission Command Center designed specifically for Chartered Accountancy (CA) students. The CA journey is notoriously challenging, and CA Orbit is built to help students strategically manage their study hours, tackle weak subjects, and stay motivated through a gamified, real-time community leaderboard.
 
 ---
 
-## 📡 Backend Deployment (FastAPI) - On Render
-1. **Connect Repository**: Link your GitHub repo to Render.
-2. **Select Root**: Set `Root Directory` to `backend`.
-3. **Environment Variables**:
-   - `DATABASE_URL`: Your PostgreSQL connection string.
-   - `SECRET_KEY`: A random long string for JWT.
-4. **Build Command**: `pip install -r requirements.txt`
-5. **Start Command**: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+## ✨ Features
+
+- 🧠 **AI Strategy Generation:** Uses Gemini AI to analyze your exam level, study capacity, and weak subjects to generate a customized, daily study plan.
+- 🏆 **Real-Time Leaderboard:** Gamified study tracking! Every hour you study translates into points. Watch your rank rise dynamically as you complete tasks.
+- 🔐 **Seamless Authentication:** Google SSO and manual email/password login, powered by NextAuth and securely synced with our FastAPI backend.
+- 📊 **Mission Dashboard:** Track your daily missions, visualize your subject progress, and monitor your current streak.
+- 🎨 **Neo-Brutalist Design:** A bold, high-contrast, premium interface designed to keep you focused and energized.
 
 ---
 
-## 🎨 Frontend Deployment (Next.js) - On Vercel
-1. **Connect Repository**: Link your GitHub repo to Vercel.
-2. **Select Folder**: Set `Root Directory` to `frontend`.
-3. **Environment Variables**:
-   - `NEXT_PUBLIC_API_URL`: The URL of your deployed Backend (e.g., `https://ca-orbit-api.onrender.com`).
-4. **Deploy**: Hit the deploy button!
+## 🛠 Tech Stack
+
+**Frontend:**
+- [Next.js 14](https://nextjs.org/) (React, Tailwind CSS, Framer Motion)
+- [NextAuth.js](https://next-auth.js.org/) (Google SSO Integration)
+
+**Backend:**
+- [FastAPI](https://fastapi.tiangolo.com/) (Python)
+- [PostgreSQL](https://www.postgresql.org/) & [Alembic](https://alembic.sqlalchemy.org/)
+- [Gemini AI](https://deepmind.google/technologies/gemini/) (For Strategy Generation)
 
 ---
 
-## 🏗 Local "Live" Run (Docker)
-If you want to run the full stack locally as it would be in production:
+## 🚀 Getting Started (Local Development)
+
+### 1. Backend Setup
 ```bash
-docker-compose up --build
+cd backend
+python -m venv venv
+source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+pip install -r requirements.txt
 ```
-- Frontend: `http://localhost:3000`
-- Backend API: `http://localhost:8000`
+**Environment Variables (`backend/.env`):**
+```env
+DATABASE_URL=postgresql://user:password@localhost:5432/caorbit
+SECRET_KEY=your_super_secret_key
+GEMINI_API_KEY=your_gemini_api_key
+```
+**Run Server:**
+```bash
+alembic upgrade head
+uvicorn app.main:app --reload
+```
+
+### 2. Frontend Setup
+```bash
+cd frontend
+npm install
+```
+**Environment Variables (`frontend/.env.local`):**
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000
+GOOGLE_CLIENT_ID=your_google_id
+GOOGLE_CLIENT_SECRET=your_google_secret
+NEXTAUTH_SECRET=your_nextauth_secret
+NEXTAUTH_URL=http://localhost:3000
+```
+**Run Server:**
+```bash
+npm run dev
+```
 
 ---
 
-## 🎨 Design System: NEO-BRUTALIST
-- **YELLOW**: #FFD60A
-- **RED**: #FF3B30
-- **BORDERS**: 4px solid black
-- **SHADOWS**: 12px hard offset
+## 🌍 Open Source Mission
 
-**BUILT FOR THE BRAVE. BUILT FOR CA STUDENTS.**
+This project is entirely open-source and free to use. We believe that technology should empower students, not exploit them. Whether you are a developer looking to contribute, or a CA student looking to optimize your study routine—**Welcome to the Orbit.**
+
+Feel free to fork this repository, open issues, and submit pull requests. Let's build the ultimate study ecosystem for CA students everywhere.
