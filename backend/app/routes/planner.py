@@ -70,7 +70,7 @@ def generate_plan(
                         "content": prompt,
                     }
                 ],
-                model="llama3-8b-8192",
+                model="llama-3.1-8b-instant",
             )
             strategy_text = chat_completion.choices[0].message.content
         except Exception as e:
