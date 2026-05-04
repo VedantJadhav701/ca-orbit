@@ -1,6 +1,7 @@
 import Cookies from "js-cookie";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const envUrl = process.env.NEXT_PUBLIC_API_URL;
+const API_BASE_URL = (envUrl && envUrl.includes("onrender.com")) ? envUrl : "https://ca-orbit.onrender.com";
 
 export async function apiRequest(endpoint: string, options: RequestInit = {}) {
   const token = Cookies.get("orbit_token");
