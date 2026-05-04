@@ -4,9 +4,11 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { plannerApi } from "@/lib/api";
+import { useSession } from "next-auth/react";
 
 export default function SurveyPage() {
   const router = useRouter();
+  const { update } = useSession();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -27,6 +29,7 @@ export default function SurveyPage() {
         study_hours: formData.studyHours,
         stress_level: formData.stressLevel,
       });
+      await update({ onboarding_completed: true });
       router.push("/dashboard?survey=completed");
     } catch (err) {
       console.error("Survey submission failed", err);

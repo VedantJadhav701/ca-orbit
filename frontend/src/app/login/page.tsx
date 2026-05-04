@@ -3,24 +3,99 @@
 import { signIn } from "next-auth/react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useState } from "react";
+import { authApi } from "@/lib/api";
+import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleManualLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    
+    try {
+      const formData = new FormData();
+      formData.append("username", email);
+      formData.append("password", password);
+      
+      const data = await authApi.login(formData);
+      
+      Cookies.set("orbit_token", data.access_token, { expires: 7 });
+      
+      if (data.onboarding_completed) {
+        window.location.href = "/dashboard";
+      } else {
+        window.location.href = "/survey";
+      }
+    } catch (err: any) {
+      setError(err.message || "Login failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4 mesh-bg">
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-xl bg-black border-brutalist-lg shadow-[16px_16px_0px_#FFD60A] p-10 md:p-14 space-y-10"
+        className="w-full max-w-xl bg-black border-brutalist-lg shadow-[16px_16px_0px_#FFD60A] p-10 md:p-14 space-y-8"
       >
         <div className="text-center">
           <h1 className="text-6xl font-heading text-primary text-glow mb-2">CA ORBIT</h1>
           <p className="text-xl text-gray-300 font-body">Sign in to access your Mission Command Center</p>
         </div>
 
+        {error && <div className="bg-red-500 text-white p-4 font-heading text-xl">{error}</div>}
+
+        <form onSubmit={handleManualLogin} className="space-y-6">
+          <div>
+            <label className="block text-xl font-heading mb-2 text-white">EMAIL</label>
+            <input 
+              type="email" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full bg-white text-black text-xl font-body p-4 border-brutalist focus:outline-none"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-xl font-heading mb-2 text-white">PASSWORD</label>
+            <input 
+              type="password" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full bg-white text-black text-xl font-body p-4 border-brutalist focus:outline-none"
+              required
+            />
+          </div>
+          <button 
+            type="submit"
+            disabled={loading}
+            className="w-full neo-btn bg-secondary text-white py-4 text-2xl font-heading"
+          >
+            {loading ? "AUTHENTICATING..." : "SIGN IN"}
+          </button>
+        </form>
+
+        <div className="flex items-center gap-4 py-2">
+          <div className="flex-1 h-[3px] bg-white/20"></div>
+          <span className="text-gray-400 font-heading text-lg">OR</span>
+          <div className="flex-1 h-[3px] bg-white/20"></div>
+        </div>
+
         {/* Google Sign-In Button */}
         <button
+          type="button"
           onClick={() => signIn("google", { callbackUrl: "/survey" })}
-          className="w-full flex items-center justify-center gap-4 bg-white text-black border-brutalist shadow-brutalist px-6 py-5 text-2xl font-heading hover:-translate-x-[2px] hover:-translate-y-[2px] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[4px_4px_0px_#000] transition-all"
+          className="w-full flex items-center justify-center gap-4 bg-white text-black border-brutalist shadow-brutalist px-6 py-4 text-2xl font-heading hover:-translate-x-[2px] hover:-translate-y-[2px] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[4px_4px_0px_#000] transition-all"
         >
           <svg className="w-7 h-7" viewBox="0 0 24 24">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
@@ -31,22 +106,8 @@ export default function LoginPage() {
           SIGN IN WITH GOOGLE
         </button>
 
-        <div className="flex items-center gap-4">
-          <div className="flex-1 h-[3px] bg-white/20"></div>
-          <span className="text-gray-400 font-heading text-lg">OR</span>
-          <div className="flex-1 h-[3px] bg-white/20"></div>
-        </div>
-
-        {/* Manual Login Redirect */}
-        <Link
-          href="/register"
-          className="block w-full text-center neo-btn bg-secondary text-white px-6 py-5 text-2xl font-heading"
-        >
-          CREATE ACCOUNT
-        </Link>
-
-        <p className="text-center text-gray-400 font-body text-lg">
-          By signing in, you agree to our Terms of Service
+        <p className="text-center text-gray-400 font-body text-lg pt-4">
+          Don't have an account? <Link href="/register" className="text-primary hover:underline">Register here</Link>
         </p>
       </motion.div>
     </div>

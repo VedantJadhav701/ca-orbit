@@ -15,7 +15,7 @@ export const authOptions: NextAuthOptions = {
     async signIn() {
       return true;
     },
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account, trigger, session }) {
       if (account?.provider === "google" && user) {
         try {
           const res = await fetch("https://ca-orbit.onrender.com/auth/google", {
@@ -37,6 +37,11 @@ export const authOptions: NextAuthOptions = {
           console.error("Google Auth Error:", e);
         }
       }
+      
+      if (trigger === "update" && session?.onboarding_completed !== undefined) {
+        token.onboarding_completed = session.onboarding_completed;
+      }
+      
       if (user) {
         token.sub = user.id;
       }
