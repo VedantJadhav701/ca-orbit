@@ -47,7 +47,7 @@ def generate_plan(
     
     if GEMINI_API_KEY:
         try:
-            model = genai.GenerativeModel('gemini-1.5-flash')
+            model = genai.GenerativeModel('gemini-1.5-flash-latest')
             prompt = f"""
             You are an expert Chartered Accountant mentor. Create a custom study strategy for a CA student.
             
