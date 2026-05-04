@@ -9,7 +9,7 @@ from app.core.database import Base, engine
 from app.models.user import User
 from app.models.task import Task
 from app.models.progress import Progress
-from app.routes import auth, tasks, planner, progress
+from app.routes import auth, tasks, planner, progress, community
 
 # Create all tables on startup (safe - only creates if they don't exist)
 try:
@@ -32,6 +32,7 @@ app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(tasks.router, prefix="/tasks", tags=["tasks"])
 app.include_router(planner.router, prefix="/planner", tags=["planner"])
 app.include_router(progress.router, prefix="/progress", tags=["progress"])
+app.include_router(community.router, prefix="/community", tags=["community"])
 
 @app.get("/")
 async def root():

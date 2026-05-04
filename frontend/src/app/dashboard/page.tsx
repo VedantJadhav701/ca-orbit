@@ -14,19 +14,22 @@ function DashboardContent() {
   const [summary, setSummary] = useState<any>(null);
   const [subjects, setSubjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const isSurveyCompleted = searchParams.get('survey') === 'completed';
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [taskList, statsSummary, subProgress] = await Promise.all([
+        const [taskList, statsSummary, subProgress, lbData] = await Promise.all([
           taskApi.list(),
           progressApi.summary(),
-          progressApi.get()
+          progressApi.get(),
+          apiRequest("/community/leaderboard")
         ]);
         setTasks(taskList.slice(0, 3)); // Only show top 3 on dashboard
         setSummary(statsSummary);
         setSubjects(subProgress);
+        setLeaderboard(lbData.slice(0, 5)); // Show top 5 on dashboard
       } catch (err) {
         console.error("Failed to fetch dashboard data", err);
       } finally {
@@ -118,18 +121,44 @@ function DashboardContent() {
           </div>
         </div>
 
-        {/* Subject Progress */}
-        <div className="space-y-6">
-          <h2 className="text-4xl font-heading underline">SUBJECT STATUS</h2>
-          <div className="neo-card space-y-8 bg-white/5 border-white">
-            {subjects.map((sub: any) => (
-              <ProgressBar 
-                key={sub.subject} 
-                label={sub.subject} 
-                value={sub.percentage} 
-                color={sub.percentage < 30 ? "secondary" : "primary"} 
-              />
-            ))}
+        {/* Subject Progress & Leaderboard */}
+        <div className="space-y-12">
+          <div className="space-y-6">
+            <h2 className="text-4xl font-heading underline">SUBJECT STATUS</h2>
+            <div className="neo-card space-y-8 bg-white/5 border-white">
+              {subjects.map((sub: any) => (
+                <ProgressBar 
+                  key={sub.subject} 
+                  label={sub.subject} 
+                  value={sub.percentage} 
+                  color={sub.percentage < 30 ? "secondary" : "primary"} 
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            <div className="flex justify-between items-end">
+              <h2 className="text-4xl font-heading underline">TOP RANKS</h2>
+              <a href="/community" className="text-primary hover:underline font-heading text-xl">VIEW ALL →</a>
+            </div>
+            <div className="neo-card bg-black p-0 overflow-hidden border-brutalist shadow-[8px_8px_0px_#FF3B30]">
+              <table className="w-full text-left font-body">
+                <tbody className="divide-y divide-gray-800">
+                  {leaderboard.length === 0 ? (
+                    <tr><td className="p-4 text-center text-gray-500">No ranks yet</td></tr>
+                  ) : leaderboard.map((user) => (
+                    <tr key={user.rank} className="hover:bg-white/5">
+                      <td className="p-4 font-heading text-xl">
+                        {user.rank <= 3 ? <span className="text-primary">#{user.rank}</span> : `#${user.rank}`}
+                      </td>
+                      <td className="p-4 font-bold truncate max-w-[100px]">{user.name}</td>
+                      <td className="p-4 text-secondary text-right">{user.points} PTS</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>

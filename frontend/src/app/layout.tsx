@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Bangers, Comic_Neue } from "next/font/google";
 import "./globals.css";
+import { Providers } from "@/components/Providers";
 
 const bangers = Bangers({
   weight: "400",
@@ -27,7 +28,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${bangers.variable} ${comicNeue.variable}`}>
       <body className="min-h-screen bg-dark text-white font-body antialiased">
-        {children}
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );

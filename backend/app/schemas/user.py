@@ -26,6 +26,7 @@ class User(UserInDBBase):
 class Token(BaseModel):
     access_token: str
     token_type: str
+    onboarding_completed: Optional[bool] = False
 
 class TokenPayload(BaseModel):
     sub: Optional[int] = None

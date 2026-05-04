@@ -51,8 +51,44 @@ def login(
                 user.id, expires_delta=access_token_expires
             ),
             "token_type": "bearer",
+            "onboarding_completed": user.onboarding_completed,
         }
-    except HTTPException:
-        raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Login Error: {str(e)}")
+
+from pydantic import BaseModel
+from typing import Optional
+
+class GoogleLogin(BaseModel):
+    email: str
+    full_name: str
+    google_id: str
+    avatar_url: Optional[str] = None
+
+@router.post("/google", response_model=Token)
+def google_auth(user_data: GoogleLogin, db: Session = Depends(get_db)):
+    try:
+        user = db.query(User).filter(User.email == user_data.email).first()
+        if not user:
+            user = User(
+                email=user_data.email,
+                full_name=user_data.full_name,
+                google_id=user_data.google_id,
+                avatar_url=user_data.avatar_url,
+                onboarding_completed=False
+            )
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+        
+        access_token_expires = timedelta(minutes=security.ACCESS_TOKEN_EXPIRE_MINUTES)
+        return {
+            "access_token": security.create_access_token(
+                user.id, expires_delta=access_token_expires
+            ),
+            "token_type": "bearer",
+            "onboarding_completed": user.onboarding_completed,
+        }
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=400, detail=f"Google Auth Error: {str(e)}")

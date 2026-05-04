@@ -92,6 +92,7 @@ Your stress level is {survey.stress_level}/10. Make sure to take a 10-minute bre
 *(Note: Add GEMINI_API_KEY to Render environment variables to enable real AI generation)*"""
 
     current_user.ai_strategy = strategy_text
+    current_user.onboarding_completed = True
     db.commit()
     
     # Generate concrete tasks based on the survey

@@ -1,20 +1,13 @@
 "use client";
 
-import React, { Suspense } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-
-const LEADERBOARD_DATA = [
-  { rank: 1, name: "Vedant Jadhav", level: "CA Inter", hours: 42, points: 1250, streak: 14 },
-  { rank: 2, name: "Riya Sharma", level: "CA Final", hours: 38, points: 1100, streak: 8 },
-  { rank: 3, name: "Aryan Patel", level: "CA Foundation", hours: 35, points: 950, streak: 5 },
-  { rank: 4, name: "Neha Gupta", level: "CA Inter", hours: 32, points: 840, streak: 12 },
-  { rank: 5, name: "Karan Singh", level: "CA Final", hours: 28, points: 720, streak: 3 },
-  { rank: 6, name: "Sneha Reddy", level: "CA Foundation", hours: 25, points: 610, streak: 7 },
-  { rank: 7, name: "Rahul Verma", level: "CA Inter", hours: 22, points: 530, streak: 2 },
-];
+import { apiRequest } from "@/lib/api";
 
 function Podium({ user, height, color, emoji }: { user: any, height: string, color: string, emoji: string }) {
+  if (!user) return <div className={`w-full max-w-[200px] h-32`}></div>;
+
   return (
     <motion.div 
       initial={{ y: 100, opacity: 0 }}
@@ -35,8 +28,29 @@ function Podium({ user, height, color, emoji }: { user: any, height: string, col
 }
 
 function CommunityContent() {
-  const top3 = LEADERBOARD_DATA.slice(0, 3);
-  const rest = LEADERBOARD_DATA.slice(3);
+  const [leaderboardData, setLeaderboardData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchLeaderboard() {
+      try {
+        const data = await apiRequest("/community/leaderboard");
+        setLeaderboardData(data);
+      } catch (err) {
+        console.error("Failed to load leaderboard", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchLeaderboard();
+  }, []);
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-screen"><h1 className="text-6xl font-heading animate-pulse text-white">LOADING RANKS...</h1></div>;
+  }
+
+  const top3 = leaderboardData.slice(0, 3);
+  const rest = leaderboardData.slice(3);
 
   return (
     <div className="min-h-screen mesh-bg p-4 md:p-10 flex flex-col items-center">
@@ -59,22 +73,24 @@ function CommunityContent() {
             animate={{ scale: 1, opacity: 1 }}
             className="inline-block bg-white text-black font-heading text-2xl px-6 py-2 border-brutalist transform -rotate-2"
           >
-            WEEK 42 COMPETITION
+            WEEKLY COMPETITION
           </motion.div>
           <h1 className="text-6xl md:text-8xl font-heading text-white text-glow">
             THE <span className="text-secondary">ELITE</span> RANKS
           </h1>
           <p className="text-2xl font-body text-gray-300 max-w-2xl mx-auto">
-            Log your study hours, complete missions, and dominate the leaderboard. Only the top 3 will be immortalized.
+            Complete your daily missions to earn points and dominate the leaderboard. Only the top 3 will be immortalized.
           </p>
         </div>
 
         {/* Podium for Top 3 */}
-        <div className="flex justify-center items-end h-[400px] gap-2 md:gap-6 w-full max-w-4xl mx-auto border-b-4 border-white pb-0 px-4">
-          <Podium user={top3[1]} height="h-[200px]" color="bg-gray-300" emoji="🥈" />
-          <Podium user={top3[0]} height="h-[280px]" color="bg-primary" emoji="👑" />
-          <Podium user={top3[2]} height="h-[150px]" color="bg-[#CD7F32]" emoji="🥉" />
-        </div>
+        {leaderboardData.length > 0 && (
+          <div className="flex justify-center items-end h-[400px] gap-2 md:gap-6 w-full max-w-4xl mx-auto border-b-4 border-white pb-0 px-4">
+            <Podium user={top3[1]} height="h-[200px]" color="bg-gray-300" emoji="🥈" />
+            <Podium user={top3[0]} height="h-[280px]" color="bg-primary" emoji="👑" />
+            <Podium user={top3[2]} height="h-[150px]" color="bg-[#CD7F32]" emoji="🥉" />
+          </div>
+        )}
 
         {/* Leaderboard Table */}
         <motion.div 
@@ -96,7 +112,13 @@ function CommunityContent() {
                 </tr>
               </thead>
               <tbody className="text-white text-xl divide-y divide-gray-800">
-                {LEADERBOARD_DATA.map((user) => (
+                {leaderboardData.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="p-12 text-center text-gray-500 font-heading text-2xl">
+                      NO DATA YET. BE THE FIRST TO COMPLETE A MISSION!
+                    </td>
+                  </tr>
+                ) : leaderboardData.map((user) => (
                   <tr key={user.rank} className="hover:bg-white/5 transition-colors group">
                     <td className="p-6 font-heading text-2xl">
                       {user.rank <= 3 ? <span className="text-primary">#{user.rank}</span> : `#${user.rank}`}
@@ -120,7 +142,7 @@ function CommunityContent() {
         {/* Call to Action */}
         <div className="text-center pb-20">
           <Link href="/dashboard" className="neo-btn bg-secondary text-white border-brutalist shadow-[8px_8px_0px_white] px-12 py-6 text-3xl font-heading hover:scale-105 transition-transform inline-block">
-            LOG YOUR HOURS
+            COMPLETE MISSIONS
           </Link>
         </div>
 
