@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.app.routes import auth, tasks, planner, progress
+from app.routes import auth, tasks, planner, progress
 
 app = FastAPI(title="CA Orbit API")
 

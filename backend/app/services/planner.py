@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 from typing import List
-from backend.app.models.user import User
-from backend.app.models.task import Task
+from app.models.user import User
+from app.models.task import Task
 from sqlalchemy.orm import Session
 
 def generate_study_plan(db: Session, user: User):
