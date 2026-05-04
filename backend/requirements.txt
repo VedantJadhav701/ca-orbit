@@ -7,7 +7,6 @@ pydantic[email]>=2.0.0
 pydantic-settings
 email-validator>=2.0.0
 python-jose[cryptography]
-passlib[bcrypt]
-bcrypt==4.0.1
+bcrypt
 python-multipart==0.0.9
 google-genai
