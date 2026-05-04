@@ -19,7 +19,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
         <span>{label}</span>
         <span>{value}%</span>
       </div>
-      <div className="w-full h-8 bg-black border-4 border-black shadow-[4px_4px_0px_rgba(255,255,255,0.2)] overflow-hidden">
+      <div className="w-full h-8 bg-gray-900 border-4 border-gray-700 shadow-[4px_4px_0px_rgba(255,255,255,0.1)] overflow-hidden">
         <div 
           className={`h-full ${barColor} border-r-4 border-black transition-all duration-500`} 
           style={{ width: `${value}%` }}
