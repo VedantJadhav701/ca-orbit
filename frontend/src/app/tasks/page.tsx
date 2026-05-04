@@ -1,33 +1,76 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { TaskCard } from "@/components/TaskCard";
 import { BrutalistButton } from "@/components/BrutalistButton";
 import { BrutalistInput } from "@/components/BrutalistInput";
-import { Plus, Search, Filter } from "lucide-react";
+import { Plus, Search } from "lucide-react";
+import { taskApi } from "@/lib/api";
 
 export default function TasksPage() {
-  const [tasks, setTasks] = useState([
-    { id: 1, title: "Standard Costing - Variances", subject: "COSTING", timeEstimate: "2h", completed: false },
-    { id: 2, title: "Company Law - Audit & Auditors", subject: "LAW", timeEstimate: "1.5h", completed: true },
-    { id: 3, title: "GST - Input Tax Credit", subject: "TAXATION", timeEstimate: "3h", completed: false },
-  ]);
-
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [newTask, setNewTask] = useState({ title: "", subject: "", time: "" });
+  const [newTask, setNewTask] = useState({ title: "", subject: "", estimated_time: "" });
 
-  const toggleTask = (id: number) => {
-    setTasks(tasks.map(task => task.id === id ? { ...task, completed: !task.completed } : task));
-  };
-
-  const handleAddTask = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newTask.title && newTask.subject) {
-      setTasks([...tasks, { id: Date.now(), ...newTask, timeEstimate: newTask.time, completed: false }]);
-      setNewTask({ title: "", subject: "", time: "" });
-      setShowAddForm(false);
+  const fetchTasks = async () => {
+    try {
+      const data = await taskApi.list();
+      setTasks(data);
+    } catch (err) {
+      console.error("Failed to fetch tasks", err);
+    } finally {
+      setLoading(false);
     }
   };
+
+  useEffect(() => { fetchTasks(); }, []);
+
+  const toggleTask = async (id: number) => {
+    const task = tasks.find(t => t.id === id);
+    if (!task) return;
+    try {
+      await taskApi.update(id, { completed: !task.completed });
+      setTasks(tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
+    } catch (err) {
+      console.error("Failed to update task", err);
+    }
+  };
+
+  const handleAddTask = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTask.title || !newTask.subject) return;
+    try {
+      const created = await taskApi.create({
+        title: newTask.title,
+        subject: newTask.subject,
+        estimated_time: parseFloat(newTask.estimated_time) || 1,
+      });
+      setTasks([...tasks, created]);
+      setNewTask({ title: "", subject: "", estimated_time: "" });
+      setShowAddForm(false);
+    } catch (err) {
+      console.error("Failed to create task", err);
+    }
+  };
+
+  const deleteTask = async (id: number) => {
+    try {
+      await taskApi.delete(id);
+      setTasks(tasks.filter(t => t.id !== id));
+    } catch (err) {
+      console.error("Failed to delete task", err);
+    }
+  };
+
+  if (loading) return (
+    <div className="flex items-center justify-center h-full">
+      <h1 className="text-6xl font-heading animate-pulse">LOADING MISSIONS...</h1>
+    </div>
+  );
+
+  const activeTasks = tasks.filter(t => !t.completed);
+  const completedTasks = tasks.filter(t => t.completed);
 
   return (
     <div className="space-y-12">
@@ -42,19 +85,7 @@ export default function TasksPage() {
         </BrutalistButton>
       </header>
 
-      {/* Filters */}
-      <div className="flex space-x-4">
-        <div className="flex-1 relative">
-          <BrutalistInput placeholder="SEARCH TASKS..." className="pl-12" />
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-black/40" />
-        </div>
-        <BrutalistButton variant="white" className="px-6 py-2 flex items-center space-x-2">
-          <Filter className="w-6 h-6" />
-          <span>FILTER</span>
-        </BrutalistButton>
-      </div>
-
-      {/* Add Task Modal-like Form */}
+      {/* Add Task Form */}
       {showAddForm && (
         <div className="neo-card bg-primary space-y-6">
           <h2 className="text-4xl font-heading underline">ADD NEW MISSION</h2>
@@ -72,10 +103,11 @@ export default function TasksPage() {
               required
             />
             <BrutalistInput 
-              label="ESTIMATED TIME" 
-              placeholder="e.g. 2h"
-              value={newTask.time}
-              onChange={(e) => setNewTask({ ...newTask, time: e.target.value })}
+              label="ESTIMATED HOURS" 
+              placeholder="e.g. 2"
+              type="number"
+              value={newTask.estimated_time}
+              onChange={(e) => setNewTask({ ...newTask, estimated_time: e.target.value })}
             />
             <div className="md:col-span-3 flex justify-end space-x-4">
               <BrutalistButton variant="white" onClick={() => setShowAddForm(false)} type="button">CANCEL</BrutalistButton>
@@ -87,19 +119,42 @@ export default function TasksPage() {
 
       {/* Task List */}
       <div className="space-y-6">
-        <h2 className="text-4xl font-heading underline">ACTIVE MISSIONS</h2>
+        <h2 className="text-4xl font-heading underline">ACTIVE MISSIONS ({activeTasks.length})</h2>
         <div className="grid grid-cols-1 gap-4">
-          {tasks.filter(t => !t.completed).map(task => (
-            <TaskCard key={task.id} {...task} onToggle={() => toggleTask(task.id)} />
-          ))}
+          {activeTasks.length > 0 ? activeTasks.map(task => (
+            <TaskCard 
+              key={task.id} 
+              title={task.title}
+              subject={task.subject}
+              timeEstimate={`${task.estimated_time || 1}h`}
+              completed={task.completed}
+              onToggle={() => toggleTask(task.id)} 
+            />
+          )) : (
+            <div className="neo-card bg-white/10 border-dashed border-4 flex flex-col items-center justify-center py-12">
+              <p className="text-3xl font-heading opacity-50 mb-4">NO ACTIVE MISSIONS</p>
+              <BrutalistButton onClick={() => setShowAddForm(true)}>CREATE YOUR FIRST TASK</BrutalistButton>
+            </div>
+          )}
         </div>
 
-        <h2 className="text-4xl font-heading underline mt-12 opacity-60">COMPLETED</h2>
-        <div className="grid grid-cols-1 gap-4">
-          {tasks.filter(t => t.completed).map(task => (
-            <TaskCard key={task.id} {...task} onToggle={() => toggleTask(task.id)} />
-          ))}
-        </div>
+        {completedTasks.length > 0 && (
+          <>
+            <h2 className="text-4xl font-heading underline mt-12 opacity-60">COMPLETED ({completedTasks.length})</h2>
+            <div className="grid grid-cols-1 gap-4">
+              {completedTasks.map(task => (
+                <TaskCard 
+                  key={task.id} 
+                  title={task.title}
+                  subject={task.subject}
+                  timeEstimate={`${task.estimated_time || 1}h`}
+                  completed={task.completed}
+                  onToggle={() => toggleTask(task.id)} 
+                />
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

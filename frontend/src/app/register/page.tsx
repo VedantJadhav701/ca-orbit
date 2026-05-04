@@ -38,38 +38,38 @@ export default function RegisterPage() {
         attempt_date: formData.attemptDate,
       });
       
-      // AUTO-LOGIN AFTER SUCCESSFUL REGISTRATION
+      // Auto-login after registration
       const loginFormData = new FormData();
       loginFormData.append("username", formData.email);
       loginFormData.append("password", formData.password);
       
       const loginData = await authApi.login(loginFormData);
       Cookies.set("orbit_token", loginData.access_token, { expires: 7 });
-      router.push("/dashboard");
+      router.push("/survey");
     } catch (err: any) {
-      setError(err.message || "REGISTRATION FAILED.");
+      setError(err.message || "REGISTRATION FAILED. TRY AGAIN.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="neo-card w-full max-w-2xl bg-secondary text-white space-y-8">
-        <h1 className="text-5xl font-heading text-center underline">REGISTER</h1>
+    <div className="min-h-screen flex items-center justify-center p-4 mesh-bg">
+      <div className="w-full max-w-2xl bg-black border-brutalist-lg shadow-[16px_16px_0px_#FF3B30] p-10 space-y-8">
+        <h1 className="text-5xl font-heading text-center text-primary text-glow">CREATE ACCOUNT</h1>
         
         {error && (
-          <div className="bg-primary text-black p-4 border-brutalist font-heading text-xl">
+          <div className="bg-secondary text-white p-4 border-brutalist font-heading text-xl text-center">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6 text-black">
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="md:col-span-2">
             <BrutalistInput 
               label="FULL NAME" 
               name="fullName"
-              placeholder="Elon Musk (Future CA)"
+              placeholder="Your Name"
               value={formData.fullName}
               onChange={handleChange}
               required
@@ -79,7 +79,7 @@ export default function RegisterPage() {
             label="EMAIL" 
             name="email"
             type="email" 
-            placeholder="ca.student@example.com"
+            placeholder="you@example.com"
             value={formData.email}
             onChange={handleChange}
             required
@@ -95,10 +95,10 @@ export default function RegisterPage() {
           />
           
           <div className="flex flex-col space-y-2 w-full">
-            <label className="font-heading text-2xl text-black">CA LEVEL</label>
+            <label className="font-heading text-2xl text-white">CA LEVEL</label>
             <select 
               name="level"
-              className="bg-white border-brutalist shadow-brutalist px-4 py-3 text-xl font-body focus:outline-none focus:translate-x-[2px] focus:translate-y-[2px] focus:shadow-[4px_4px_0px_#000] transition-all"
+              className="bg-white text-black border-brutalist shadow-brutalist px-4 py-3 text-xl font-body focus:outline-none transition-all"
               value={formData.level}
               onChange={handleChange}
             >
@@ -129,9 +129,9 @@ export default function RegisterPage() {
           </div>
         </form>
 
-        <p className="text-xl font-body text-center">
+        <p className="text-xl font-body text-center text-gray-400">
           ALREADY HAVE AN ACCOUNT?{" "}
-          <Link href="/login" className="font-bold underline hover:text-primary text-primary">
+          <Link href="/login" className="font-bold underline text-primary hover:text-white">
             LOGIN
           </Link>
         </p>

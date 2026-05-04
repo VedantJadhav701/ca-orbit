@@ -41,6 +41,7 @@ export const taskApi = {
   list: () => apiRequest("/tasks"),
   create: (data: any) => apiRequest("/tasks", { method: "POST", body: JSON.stringify(data) }),
   update: (id: number, data: any) => apiRequest(`/tasks/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+  delete: (id: number) => apiRequest(`/tasks/${id}`, { method: "DELETE" }),
 };
 
 export const progressApi = {

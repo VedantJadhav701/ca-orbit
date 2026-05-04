@@ -1,20 +1,38 @@
 "use client";
 
-import React from "react";
-import { StatsCard } from "@/components/StatsCard";
+import React, { useState, useEffect } from "react";
 import { ProgressBar } from "@/components/ProgressBar";
-import { TrendingUp, Award, Flame, Calendar } from "lucide-react";
+import { TrendingUp, Award, Flame } from "lucide-react";
+import { progressApi, taskApi } from "@/lib/api";
 
 export default function ProgressPage() {
-  const subjects = [
-    { name: "ADVANCED ACCOUNTING", progress: 65, color: "primary" },
-    { name: "CORPORATE & OTHER LAWS", progress: 28, color: "secondary" },
-    { name: "TAXATION", progress: 45, color: "primary" },
-    { name: "COST & MANAGEMENT ACCT", progress: 52, color: "primary" },
-    { name: "AUDITING & ASSURANCE", progress: 35, color: "primary" },
-    { name: "EIS & STRATEGIC MGMT", progress: 12, color: "secondary" },
-    { name: "FINANCIAL MANAGEMENT", progress: 58, color: "primary" },
-  ];
+  const [subjects, setSubjects] = useState<any[]>([]);
+  const [summary, setSummary] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [subProgress, statsSummary] = await Promise.all([
+          progressApi.get(),
+          progressApi.summary(),
+        ]);
+        setSubjects(subProgress);
+        setSummary(statsSummary);
+      } catch (err) {
+        console.error("Failed to fetch progress", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  if (loading) return (
+    <div className="flex items-center justify-center h-full">
+      <h1 className="text-6xl font-heading animate-pulse">ANALYZING DATA...</h1>
+    </div>
+  );
 
   return (
     <div className="space-y-12">
@@ -30,75 +48,46 @@ export default function ProgressPage() {
         <div className="neo-card bg-black text-white flex items-center space-x-6 p-8 border-primary">
           <TrendingUp className="w-16 h-16 text-primary" />
           <div>
-            <div className="text-5xl font-heading">42.5%</div>
+            <div className="text-5xl font-heading">{summary?.overall_completion || 0}%</div>
             <div className="text-xl font-body uppercase opacity-60">Syllabus Complete</div>
           </div>
         </div>
         <div className="neo-card bg-black text-white flex items-center space-x-6 p-8 border-secondary">
           <Flame className="w-16 h-16 text-secondary" />
           <div>
-            <div className="text-5xl font-heading">12 DAYS</div>
-            <div className="text-xl font-body uppercase opacity-60">Highest Streak</div>
+            <div className="text-5xl font-heading">{summary?.current_streak || 0} DAYS</div>
+            <div className="text-xl font-body uppercase opacity-60">Current Streak</div>
           </div>
         </div>
         <div className="neo-card bg-black text-white flex items-center space-x-6 p-8 border-white">
           <Award className="w-16 h-16 text-white" />
           <div>
-            <div className="text-5xl font-heading">156 HRS</div>
+            <div className="text-5xl font-heading">{summary?.total_hours_studied || 0} HRS</div>
             <div className="text-xl font-body uppercase opacity-60">Total Study Time</div>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-        {/* Subject Breakdown */}
-        <div className="space-y-8">
-          <h2 className="text-4xl font-heading underline flex items-center space-x-2">
-            <span>SUBJECT BREAKDOWN</span>
-          </h2>
+      {/* Subject Breakdown */}
+      <div className="space-y-8">
+        <h2 className="text-4xl font-heading underline">SUBJECT BREAKDOWN</h2>
+        {subjects.length > 0 ? (
           <div className="neo-card bg-white space-y-8">
-            {subjects.map((sub) => (
+            {subjects.map((sub: any) => (
               <ProgressBar 
-                key={sub.name} 
-                label={sub.name} 
-                value={sub.progress} 
-                color={sub.color as "primary" | "secondary"} 
+                key={sub.subject} 
+                label={sub.subject} 
+                value={sub.percentage} 
+                color={sub.percentage < 30 ? "secondary" : "primary"} 
               />
             ))}
           </div>
-        </div>
-
-        {/* History & Goals */}
-        <div className="space-y-8">
-          <h2 className="text-4xl font-heading underline">RECENT MILESTONES</h2>
-          <div className="space-y-6">
-            <div className="neo-card bg-primary transform -rotate-1">
-              <h3 className="text-2xl font-heading">COMPLETED: GST - CHAPTER 4</h3>
-              <p className="text-lg font-body">OCTOBER 14, 2026 • 3.5 HOURS STUDIED</p>
-            </div>
-            <div className="neo-card bg-white rotate-1">
-              <h3 className="text-2xl font-heading">STREAK ALERT: 10 DAYS!</h3>
-              <p className="text-lg font-body">OCTOBER 12, 2026 • KEEP IT UP, CHAMP!</p>
-            </div>
-            <div className="neo-card bg-secondary text-white -rotate-1">
-              <h3 className="text-2xl font-heading">MOCK TEST: AUDIT</h3>
-              <p className="text-lg font-body">OCTOBER 10, 2026 • SCORE: 68/100</p>
-            </div>
+        ) : (
+          <div className="neo-card bg-white/10 border-dashed border-4 flex flex-col items-center justify-center py-12">
+            <p className="text-3xl font-heading opacity-50">NO PROGRESS DATA YET</p>
+            <p className="text-xl font-body opacity-40 mt-2">Complete tasks to start tracking your progress!</p>
           </div>
-
-          <div className="neo-card bg-black text-white space-y-4">
-            <h2 className="text-3xl font-heading underline">NEXT GOAL</h2>
-            <div className="flex items-center space-x-4">
-              <div className="w-16 h-16 border-4 border-primary flex items-center justify-center text-3xl font-heading">
-                50%
-              </div>
-              <div>
-                <p className="text-2xl font-heading text-primary">REACH 50% OVERALL COMPLETION</p>
-                <p className="text-lg font-body opacity-60">BY OCTOBER 25, 2026</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );
