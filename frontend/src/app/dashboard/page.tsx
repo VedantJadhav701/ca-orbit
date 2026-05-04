@@ -1,16 +1,20 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { StatsCard } from "@/components/StatsCard";
 import { ProgressBar } from "@/components/ProgressBar";
 import { TaskCard } from "@/components/TaskCard";
 import { taskApi, progressApi } from "@/lib/api";
+import { useSearchParams } from "next/navigation";
+import { motion } from "framer-motion";
 
-export default function DashboardPage() {
+function DashboardContent() {
+  const searchParams = useSearchParams();
   const [tasks, setTasks] = useState<any[]>([]);
   const [summary, setSummary] = useState<any>(null);
   const [subjects, setSubjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const isSurveyCompleted = searchParams.get('survey') === 'completed';
 
   useEffect(() => {
     const fetchData = async () => {
@@ -60,6 +64,17 @@ export default function DashboardPage() {
           <div className="text-4xl font-heading text-secondary">STREAK: {summary?.current_streak || 0} DAYS</div>
         </div>
       </header>
+
+      {isSurveyCompleted && (
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-secondary text-white p-6 border-brutalist shadow-[8px_8px_0px_#FFD60A] mb-8"
+        >
+          <h2 className="text-3xl font-heading mb-2">⚡ AI STRATEGY DEPLOYED</h2>
+          <p className="text-xl font-body">Based on your parameters, we've restructured your tasks. Prioritize Law revisions this week. Your 4h/day schedule is locked in.</p>
+        </motion.div>
+      )}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -119,5 +134,13 @@ export default function DashboardPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center h-full"><h1 className="text-6xl font-heading animate-pulse">LOADING DASHBOARD...</h1></div>}>
+      <DashboardContent />
+    </Suspense>
   );
 }
