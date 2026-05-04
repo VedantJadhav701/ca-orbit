@@ -4,7 +4,7 @@ import React, { useState, useEffect, Suspense } from "react";
 import { StatsCard } from "@/components/StatsCard";
 import { ProgressBar } from "@/components/ProgressBar";
 import { TaskCard } from "@/components/TaskCard";
-import { taskApi, progressApi } from "@/lib/api";
+import { taskApi, progressApi, apiRequest } from "@/lib/api";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 
