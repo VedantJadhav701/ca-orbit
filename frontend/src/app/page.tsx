@@ -13,10 +13,10 @@ export default function Home() {
           CA ORBIT
         </div>
         <div className="flex gap-4">
-          <Link href="/api/auth/signin" className="font-heading text-xl px-6 py-2 border-brutalist bg-white text-black hover:bg-gray-200 transition-colors">
+          <Link href="/login" className="font-heading text-xl px-6 py-2 border-brutalist bg-white text-black hover:bg-gray-200 transition-colors">
             LOG IN
           </Link>
-          <Link href="/api/auth/signin" className="font-heading text-xl px-6 py-2 neo-btn">
+          <Link href="/login" className="font-heading text-xl px-6 py-2 neo-btn">
             JOIN NOW
           </Link>
         </div>
@@ -67,7 +67,7 @@ export default function Home() {
           transition={{ duration: 0.8, delay: 0.4 }}
           className="flex flex-col md:flex-row gap-8 z-10 mt-8"
         >
-          <Link href="/api/auth/signin" className="neo-btn px-16 py-8 text-4xl font-heading text-glow hover:scale-105 transition-transform">
+          <Link href="/login" className="neo-btn px-16 py-8 text-4xl font-heading text-glow hover:scale-105 transition-transform">
             INITIATE MISSION
           </Link>
         </motion.div>

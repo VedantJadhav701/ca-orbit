@@ -1,7 +1,14 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.core.database import Base, engine
+from app.models.user import User
+from app.models.task import Task
+from app.models.progress import Progress
 from app.routes import auth, tasks, planner, progress
+
+# Create all tables on startup (safe - only creates if they don't exist)
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="CA Orbit API")
 
