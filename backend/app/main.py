@@ -41,9 +41,10 @@ async def root():
 async def health():
     """Health check that also verifies DB connectivity."""
     from app.core.database import SessionLocal
+    from sqlalchemy import text
     try:
         db = SessionLocal()
-        db.execute("SELECT 1")
+        db.execute(text("SELECT 1"))
         db.close()
         return {"status": "healthy", "database": "connected"}
     except Exception as e:
