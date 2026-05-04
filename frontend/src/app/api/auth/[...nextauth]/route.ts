@@ -27,8 +27,8 @@ export const authOptions: NextAuthOptions = {
           });
           const data = await res.json();
           if (res.ok) {
-            user.orbit_token = data.access_token;
-            user.onboarding_completed = data.onboarding_completed;
+            (user as any).orbit_token = data.access_token;
+            (user as any).onboarding_completed = data.onboarding_completed;
             return true;
           }
         } catch (e) {
