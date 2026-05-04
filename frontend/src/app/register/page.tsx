@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { BrutalistButton } from "@/components/BrutalistButton";
 import { BrutalistInput } from "@/components/BrutalistInput";
+import Cookies from "js-cookie";
 import { authApi } from "@/lib/api";
 
 export default function RegisterPage() {
@@ -36,7 +37,15 @@ export default function RegisterPage() {
         level: formData.level,
         attempt_date: formData.attemptDate,
       });
-      router.push("/login?registered=true");
+      
+      // AUTO-LOGIN AFTER SUCCESSFUL REGISTRATION
+      const loginFormData = new FormData();
+      loginFormData.append("username", formData.email);
+      loginFormData.append("password", formData.password);
+      
+      const loginData = await authApi.login(loginFormData);
+      Cookies.set("orbit_token", loginData.access_token, { expires: 7 });
+      router.push("/dashboard");
     } catch (err: any) {
       setError(err.message || "REGISTRATION FAILED.");
     } finally {

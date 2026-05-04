@@ -58,3 +58,10 @@ A production-grade Study OS for Chartered Accountant students, built with a **Ci
 
 ---
 **Status**: PHASE 1-6 COMPLETED. READY FOR DEPLOYMENT.
+
+## 📅 Daily Logs
+### 2026-05-04
+- 🚀 **Full-Stack Dockerization**: Updated `docker-compose.yml` to include both frontend and backend services.
+- 🔧 **Alembic Fix**: Resolved import issues in `env.py` for smoother migrations.
+- ✨ **UX Improvement**: Implemented auto-login after successful registration to streamline user onboarding.
+- 🛠 **Dev Utilities**: Added `init_db.py` and `list_dbs.py` for easier local database management.

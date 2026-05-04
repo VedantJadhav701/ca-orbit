@@ -17,10 +17,10 @@ if config.config_file_name is not None:
 # add your model's MetaData object here
 # for 'autogenerate' support
 # from myapp import mymodel
-from backend.app.core.database import Base
-from backend.app.models.user import User
-from backend.app.models.task import Task
-from backend.app.models.progress import Progress
+from app.core.database import Base
+from app.models.user import User
+from app.models.task import Task
+from app.models.progress import Progress
 
 target_metadata = Base.metadata
 
