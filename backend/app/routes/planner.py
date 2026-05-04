@@ -4,7 +4,7 @@ import logging
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-import google.generativeai as genai
+from groq import Groq
 
 from app.core.database import get_db
 from app.routes.deps import get_current_user
@@ -16,10 +16,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-# Configure Gemini API if key is present
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 @router.post("/generate", response_model=AIStrategyResponse)
 def generate_plan(
@@ -27,7 +24,7 @@ def generate_plan(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Save survey data and generate AI strategy."""
+    """Save survey data and generate AI strategy using Groq."""
     # Update user with survey details
     current_user.level = survey.level
     if survey.attempt_date:
@@ -43,11 +40,11 @@ def generate_plan(
     db.commit()
     
     # Generate AI Strategy
-    strategy_text = "AI generation unavailable. Please set GEMINI_API_KEY environment variable."
+    strategy_text = "AI generation unavailable. Please set GROQ_API_KEY environment variable."
     
-    if GEMINI_API_KEY:
+    if GROQ_API_KEY:
         try:
-            model = genai.GenerativeModel('gemini-1.5-flash-latest')
+            client = Groq(api_key=GROQ_API_KEY)
             prompt = f"""
             You are an expert Chartered Accountant mentor. Create a custom study strategy for a CA student.
             
@@ -64,12 +61,20 @@ def generate_plan(
             3. Specific tips to overcome their weakness in {survey.weakest_subject}.
             4. Advice on managing stress given their current level.
             
-            Format the response clearly using Markdown.
+            Format the response clearly using Markdown. Do not include introductory conversational filler, just start the markdown.
             """
-            response = model.generate_content(prompt)
-            strategy_text = response.text
+            chat_completion = client.chat.completions.create(
+                messages=[
+                    {
+                        "role": "user",
+                        "content": prompt,
+                    }
+                ],
+                model="llama3-8b-8192",
+            )
+            strategy_text = chat_completion.choices[0].message.content
         except Exception as e:
-            logger.error(f"Gemini API error: {e}")
+            logger.error(f"Groq API error: {e}")
             strategy_text = f"Error generating strategy: {str(e)}"
     else:
         # Fallback to smart mock text
@@ -88,7 +93,7 @@ Since your weakest subject is **{survey.weakest_subject}**, we recommend dedicat
 ### 3. Stress Management
 Your stress level is {survey.stress_level}/10. Make sure to take a 10-minute break every hour. Do not compromise on sleep!
 
-*(Note: Add GEMINI_API_KEY to Render environment variables to enable real AI generation)*"""
+*(Note: Add GROQ_API_KEY to Render environment variables to enable real AI generation)*"""
 
     current_user.ai_strategy = strategy_text
     db.commit()
