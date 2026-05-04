@@ -1,80 +1,96 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { BrutalistButton } from "@/components/BrutalistButton";
-import { Calendar as CalendarIcon, Zap, ChevronRight, ChevronLeft } from "lucide-react";
+import { Zap } from "lucide-react";
+import { plannerApi, taskApi } from "@/lib/api";
+import { useRouter } from "next/navigation";
+import ReactMarkdown from "react-markdown";
 
 export default function PlannerPage() {
-  const [currentWeek] = useState([
-    { day: "MON", date: "15", tasks: 4 },
-    { day: "TUE", date: "16", tasks: 3 },
-    { day: "WED", date: "17", tasks: 5 },
-    { day: "THU", date: "18", tasks: 2 },
-    { day: "FRI", date: "19", tasks: 6 },
-    { day: "SAT", date: "20", tasks: 4 },
-    { day: "SUN", date: "21", tasks: 1 },
-  ]);
+  const router = useRouter();
+  const [strategy, setStrategy] = useState<string>("");
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [stratData, taskData] = await Promise.all([
+          plannerApi.strategy(),
+          taskApi.list()
+        ]);
+        setStrategy(stratData.strategy);
+        setTasks(taskData);
+      } catch (err) {
+        console.error("Failed to load planner data", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full min-h-[50vh]">
+        <h1 className="text-6xl font-heading animate-pulse text-primary">DECODING AI STRATEGY...</h1>
+      </div>
+    );
+  }
+
+  // Filter only incomplete tasks for today/upcoming
+  const upcomingTasks = tasks.filter(t => !t.completed).slice(0, 5);
 
   return (
     <div className="space-y-12">
       <header className="flex justify-between items-end">
         <div>
-          <h1 className="text-6xl font-heading text-primary">STUDY PLANNER</h1>
+          <h1 className="text-6xl font-heading text-primary">AI STUDY PLANNER</h1>
           <p className="text-2xl font-body">STRATEGIZE YOUR SUCCESS. DAY BY DAY.</p>
         </div>
-        <BrutalistButton variant="secondary" className="px-8 py-4 flex items-center space-x-2">
+        <BrutalistButton 
+          variant="secondary" 
+          className="px-8 py-4 flex items-center space-x-2"
+          onClick={() => router.push("/survey")}
+        >
           <Zap className="w-8 h-8 fill-white" />
           <span>RE-GENERATE PLAN</span>
         </BrutalistButton>
       </header>
 
-      {/* Week Selector */}
-      <div className="flex items-center justify-between bg-black p-6 border-brutalist shadow-brutalist text-white">
-        <button className="hover:text-primary transition-colors"><ChevronLeft className="w-12 h-12" /></button>
-        <h2 className="text-4xl font-heading uppercase tracking-tighter">OCTOBER 15 - OCTOBER 21, 2026</h2>
-        <button className="hover:text-primary transition-colors"><ChevronRight className="w-12 h-12" /></button>
-      </div>
-
-      {/* Timeline Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
-        {currentWeek.map((day, idx) => (
-          <div 
-            key={day.day} 
-            className={`neo-card flex flex-col items-center p-6 space-y-4 ${idx === 2 ? "bg-primary border-black" : "bg-white"}`}
-          >
-            <span className="text-2xl font-heading underline">{day.day}</span>
-            <span className="text-6xl font-heading">{day.date}</span>
-            <div className="bg-black text-white px-4 py-2 font-heading text-xl border-2 border-black shadow-[4px_4px_0px_#000]">
-              {day.tasks} MISSIONS
-            </div>
-            <BrutalistButton variant="white" className="w-full text-lg py-2">VIEW</BrutalistButton>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* AI Strategy Output (Markdown) */}
+        <div className="lg:col-span-2 neo-card bg-black text-white space-y-6">
+          <h2 className="text-4xl font-heading underline text-primary flex items-center gap-3">
+            <Zap className="w-8 h-8 fill-primary" /> GEMINI AI STRATEGY
+          </h2>
+          <div className="prose prose-invert prose-lg font-body max-w-none">
+            <ReactMarkdown>{strategy}</ReactMarkdown>
           </div>
-        ))}
-      </div>
-
-      {/* Today's Deep Dive */}
-      <div className="neo-card bg-secondary text-white space-y-8">
-        <div className="flex items-center space-x-4">
-          <CalendarIcon className="w-12 h-12" />
-          <h2 className="text-5xl font-heading underline">WEDNESDAY'S OBJECTIVES</h2>
         </div>
-        
-        <div className="space-y-6">
-          <div className="bg-white text-black p-6 border-brutalist shadow-[8px_8px_0px_#000] flex justify-between items-center">
-            <div>
-              <h3 className="text-3xl font-heading">CONSOLIDATED FINANCIAL STATEMENTS</h3>
-              <p className="text-xl font-body opacity-70 uppercase">ACCOUNTS • 09:00 AM - 12:00 PM</p>
-            </div>
-            <div className="text-3xl font-heading text-secondary">3h</div>
+
+        {/* Generated Immediate Tasks */}
+        <div className="neo-card bg-secondary text-white space-y-8 h-fit">
+          <h2 className="text-4xl font-heading underline">UPCOMING MISSIONS</h2>
+          <div className="space-y-4">
+            {upcomingTasks.length > 0 ? (
+              upcomingTasks.map((task, idx) => (
+                <div key={task.id || idx} className="bg-white text-black p-4 border-brutalist shadow-[4px_4px_0px_#000]">
+                  <h3 className="text-2xl font-heading line-clamp-1">{task.title}</h3>
+                  <p className="text-lg font-body opacity-70 uppercase">{task.subject} • {task.estimated_time}H</p>
+                </div>
+              ))
+            ) : (
+              <div className="text-center p-8 bg-black/20 border-2 border-dashed">
+                <p className="text-2xl font-heading">NO ACTIVE TASKS</p>
+                <p className="font-body opacity-70">You have completed your AI missions!</p>
+              </div>
+            )}
           </div>
-          
-          <div className="bg-white text-black p-6 border-brutalist shadow-[8px_8px_0px_#000] flex justify-between items-center">
-            <div>
-              <h3 className="text-3xl font-heading">PROFESSIONAL ETHICS - CASE STUDIES</h3>
-              <p className="text-xl font-body opacity-70 uppercase">AUDIT • 02:00 PM - 05:00 PM</p>
-            </div>
-            <div className="text-3xl font-heading text-secondary">3h</div>
-          </div>
+          <BrutalistButton variant="white" className="w-full text-xl py-3" onClick={() => router.push("/tasks")}>
+            VIEW ALL MISSIONS
+          </BrutalistButton>
         </div>
       </div>
     </div>

@@ -50,5 +50,6 @@ export const progressApi = {
 };
 
 export const plannerApi = {
-  generate: () => apiRequest("/planner/generate", { method: "POST" }),
+  generate: (data: any) => apiRequest("/planner/generate", { method: "POST", body: JSON.stringify(data) }),
+  strategy: () => apiRequest("/planner/strategy"),
 };
